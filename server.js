@@ -9,7 +9,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 // --- MONGODB CONNECTION SETUP ---
-const mongoURI = 'mongodb://127.0.0.1:27017/anonymousChat';
+const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/anonymousChat';
 
 mongoose.connect(mongoURI, {
     serverSelectionTimeoutMS: 5000
@@ -19,7 +19,6 @@ mongoose.connect(mongoURI, {
     console.error("❌ MongoDB Connection Failed!");
     console.error("Error Detail:", err.message);
     console.log("--------------------------------------------------");
-    console.log("TIP: Check karein ki MongoDB Compass chalu hai ya nahi.");
     console.log("--------------------------------------------------");
 });
 
@@ -213,7 +212,7 @@ process.on('unhandledRejection', (err) => {
 });
 
 // --- START SERVER ---
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log('--------------------------------------------------');
     console.log(`🚀 Server running on http://localhost:${PORT}`);
