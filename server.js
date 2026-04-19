@@ -9,9 +9,9 @@ const server = http.createServer(app);
 const io = new Server(server, {
     maxHttpBufferSize: 5e6  // 5MB limit for voice messages (Base64 audio can be large)
 });
-
+;
 // --- MONGODB CONNECTION SETUP ---
-const mongoURI = 'mongodb://127.0.0.1:27017/anonymousChat';
+const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/anonymousChat';
 
 mongoose.connect(mongoURI, {
     serverSelectionTimeoutMS: 5000
