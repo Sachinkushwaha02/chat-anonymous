@@ -10,48 +10,183 @@
         .container { width: 100%; max-width: 800px; }
         .card { background: white; border-radius: 16px; padding: 2rem; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); }
         .hidden { display: none; }
-        .btn { padding: 12px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        h1 { font-size: 28px; margin-bottom: 0.5rem; color: #1a1a1a; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 2rem; }
+        .input-group { margin-bottom: 1.5rem; }
+        label { display: block; font-size: 14px; margin-bottom: 0.5rem; font-weight: 500; }
+        input[type="text"] { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; }
+        input[type="text"]:focus { outline: none; border-color: #667eea; }
+        .btn { width: 100%; padding: 14px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 16px; }
+        .btn:hover { background: #5568d3; }
+        .btn-secondary { background: #f0f0f0; color: #333; margin-top: 10px; }
+        .btn-secondary:hover { background: #e0e0e0; }
+        
+        /* Chat Layout */
         .chat-container { display: flex; gap: 1rem; height: 500px; }
         .chat-main { flex: 1; display: flex; flex-direction: column; }
         .chat-sidebar { width: 200px; background: #f9f9f9; border-radius: 8px; padding: 1rem; }
-        .messages { flex: 1; overflow-y: auto; padding: 1rem; background: #f9f9f9; border-radius: 8px; margin-bottom: 1rem; }
-        .message { margin-bottom: 1rem; display: flex; flex-direction: column; }
-        .message.own { align-items: flex-end; }
-        .message-text { background: white; padding: 10px 14px; border-radius: 12px; max-width: 80%; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .message.own .message-text { background: #667eea; color: white; }
-        .message-input-area { display: flex; gap: 8px; align-items: center; }
         
-        /* Mic Styles */
-        #micBtn { background: #ff4757; font-size: 18px; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; transition: 0.3s; }
-        #micBtn.recording { animation: pulse-red 1.5s infinite; background: #ff0000; }
-        @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        audio { margin-top: 5px; max-width: 100%; }
-        .system-message { text-align: center; font-size: 11px; color: #aaa; margin: 10px 0; }
+        .chat-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f0f0f0; padding-bottom: 1rem; margin-bottom: 1rem; }
+        .room-code-badge { background: #667eea; color: white; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+        .copy-btn { cursor: pointer; background: #f0f0f0; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px; }
+        .copy-btn:hover { background: #e0e0e0; }
+        
+        /* Online Users Sidebar */
+        .sidebar-header { font-size: 13px; font-weight: 600; color: #333; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        .online-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        .users-list { list-style: none; }
+        .user-item { padding: 8px 10px; margin-bottom: 6px; background: white; border-radius: 6px; font-size: 13px; color: #555; display: flex; align-items: center; gap: 8px; }
+        .user-item.current { background: #e6f1fb; color: #667eea; font-weight: 500; }
+        .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; }
+        .user-item.current .user-avatar { background: #5568d3; }
+        
+        .messages { flex: 1; overflow-y: auto; padding: 1rem; background: #f9f9f9; border-radius: 8px; margin-bottom: 1rem; }
+        .message { margin-bottom: 1rem; display: flex; flex-direction: column; animation: slideIn 0.2s; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .message.own { align-items: flex-end; }
+        .username { font-weight: 600; color: #667eea; font-size: 12px; margin-bottom: 2px; }
+        .message-text { background: white; padding: 10px 14px; border-radius: 12px; display: inline-block; max-width: 80%; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); word-wrap: break-word; }
+        .message.own .message-text { background: #667eea; color: white; border-bottom-right-radius: 2px; }
+        .message:not(.own) .message-text { border-bottom-left-radius: 2px; }
+        
+        /* Voice Message Styles */
+        .voice-message { background: #f0f0f0; padding: 8px 12px; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px; max-width: 250px; }
+        .message.own .voice-message { background: #5568d3; }
+        .voice-message audio { width: 180px; height: 32px; }
+        .voice-icon { font-size: 18px; }
+        
+        /* Message Input Area */
+        .message-input-area { display: flex; gap: 8px; align-items: center; }
+        .message-input-area input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ddd; }
+        
+        /* Mic Button */
+        .mic-btn { 
+            width: 48px; 
+            height: 48px; 
+            border-radius: 50%; 
+            background: #667eea; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 20px; 
+            transition: 0.2s;
+            position: relative;
+        }
+        .mic-btn:hover { background: #5568d3; transform: scale(1.05); }
+        
+        /* Recording Animation */
+        .mic-btn.recording { 
+            background: #ef4444; 
+            animation: recordPulse 1s infinite;
+        }
+        @keyframes recordPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        }
+        
+        /* Recording Indicator */
+        .recording-indicator {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ef4444;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+            display: none;
+        }
+        .recording-indicator.active { display: block; animation: fadeIn 0.2s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .empty-state { text-align: center; color: #999; font-size: 14px; padding-top: 100px; }
+        .divider { text-align: center; color: #999; font-size: 12px; margin: 1rem 0; }
+        .divider::before, .divider::after { content: ""; display: inline-block; width: 40%; height: 1px; background: #e0e0e0; vertical-align: middle; }
+        .divider::before { margin-right: 10px; }
+        .divider::after { margin-left: 10px; }
+        
+        /* System messages */
+        .system-message { text-align: center; font-size: 11px; color: #aaa; margin: 10px 0; font-style: italic; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .chat-container { flex-direction: column; height: auto; }
+            .chat-sidebar { width: 100%; order: -1; }
+            .users-list { display: flex; flex-wrap: wrap; gap: 6px; }
+            .user-item { margin: 0; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Login Page -->
         <div id="loginPage" class="card">
-            <h1>Join Chat</h1>
-            <input type="text" id="username" placeholder="Your Name" style="width:100%; padding:10px; margin:10px 0;">
-            <input type="text" id="roomCode" placeholder="Room Code" style="width:100%; padding:10px; margin:10px 0;">
-            <button class="btn" style="width:100%" onclick="join()">Join Room</button>
+            <h1>Join Chat Room</h1>
+            <p class="subtitle">Enter a room code or generate a new one</p>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label>Your Name</label>
+                    <input type="text" id="username" placeholder="Enter your name" required>
+                </div>
+                <div class="input-group">
+                    <label>Room Code</label>
+                    <input type="text" id="roomCode" placeholder="Enter room code" required style="text-transform: uppercase;">
+                </div>
+                <button type="submit" class="btn">Join Room</button>
+                <div class="divider">OR</div>
+                <button type="button" class="btn btn-secondary" onclick="generateRoomCode()">🎲 Generate New Room Code</button>
+            </form>
         </div>
 
+        <!-- Chat Page with Sidebar -->
         <div id="chatPage" class="card hidden">
+            <div class="chat-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <h1 style="font-size: 20px; margin: 0;">Chat Room</h1>
+                    <span class="room-code-badge" id="displayRoomCode"></span>
+                    <button class="copy-btn" onclick="copyRoomCode()">Copy</button>
+                </div>
+                <button onclick="leaveRoom()" style="cursor:pointer; border:none; padding:6px 12px; border-radius:6px; background:#eee;">Leave</button>
+            </div>
+
             <div class="chat-container">
+                <!-- Main Chat Area -->
                 <div class="chat-main">
-                    <div class="messages" id="messages"></div>
-                    <div id="recordingStatus" style="color:red; display:none; font-size:12px;">🔴 Recording...</div>
+                    <div class="messages" id="messages">
+                        <div class="empty-state">Connecting...</div>
+                    </div>
                     <div class="message-input-area">
-                        <input type="text" id="messageInput" style="flex:1; padding:12px;" placeholder="Type here...">
-                        <button id="micBtn">🎤</button>
-                        <button class="btn" onclick="sendMessage()">Send</button>
+                        <input type="text" id="messageInput" placeholder="Type your message...">
+                        
+                        <!-- Mic Button with Recording Indicator -->
+                        <div style="position: relative;">
+                            <div class="recording-indicator" id="recordingIndicator">● Recording...</div>
+                            <button class="mic-btn" id="micBtn" title="Hold to record voice message">
+                                🎤
+                            </button>
+                        </div>
+                        
+                        <button class="btn" onclick="sendMessage()" style="width:auto; padding: 0 20px;">Send</button>
                     </div>
                 </div>
+
+                <!-- Online Users Sidebar -->
                 <div class="chat-sidebar">
-                    Online (<span id="userCount">0</span>)
-                    <ul id="usersList" style="list-style:none; font-size:12px;"></ul>
+                    <div class="sidebar-header">
+                        <span class="online-dot"></span>
+                        <span>Online (<span id="userCount">0</span>)</span>
+                    </div>
+                    <ul class="users-list" id="usersList">
+                        <li class="user-item">Loading...</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -60,84 +195,290 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let currentUser, currentRoom, mediaRecorder, audioChunks = [];
-        const messagesDiv = document.getElementById('messages');
+        let currentUser = '';
+        let currentRoom = '';
 
-        function join() {
-            currentUser = document.getElementById('username').value;
-            currentRoom = document.getElementById('roomCode').value.toUpperCase();
-            if(currentUser && currentRoom) {
-                socket.emit('join-room', { username: currentUser, roomCode: currentRoom });
-                document.getElementById('loginPage').classList.add('hidden');
-                document.getElementById('chatPage').classList.remove('hidden');
+        const loginForm = document.getElementById('loginForm');
+        const messagesDiv = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+        const usersList = document.getElementById('usersList');
+        const userCount = document.getElementById('userCount');
+        const micBtn = document.getElementById('micBtn');
+        const recordingIndicator = document.getElementById('recordingIndicator');
+
+        // ===== VOICE RECORDING SETUP =====
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+
+        // Request microphone permission on page load
+        async function initMicrophone() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                console.log('🎤 Microphone access granted');
+                // Stop the stream immediately (we'll request again when recording)
+                stream.getTracks().forEach(track => track.stop());
+            } catch (err) {
+                console.error('❌ Microphone access denied:', err);
+                alert('Please allow microphone access to send voice messages!');
             }
         }
 
-        function sendMessage() {
-            const text = document.getElementById('messageInput').value;
-            if(!text) return;
-            appendMsg({ user: 'You', text, isOwn: true });
-            socket.emit('send-message', { roomCode: currentRoom, user: currentUser, text });
-            document.getElementById('messageInput').value = '';
-        }
-
-        // --- VOICE LOGIC ---
-        const micBtn = document.getElementById('micBtn');
-        micBtn.onmousedown = async () => {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
-            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-            mediaRecorder.onstop = () => {
-                const blob = new Blob(audioChunks, { type: 'audio/webm' });
-                const reader = new FileReader();
-                reader.readAsDataURL(blob);
-                reader.onloadend = () => {
-                    const base64 = reader.result;
-                    appendVoice({ user: 'You', audioData: base64, isOwn: true });
-                    socket.emit('send-voice', { roomCode: currentRoom, user: currentUser, audioData: base64 });
+        // Start Recording (on mousedown)
+        async function startRecording() {
+            if (isRecording) return;
+            
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                // Create MediaRecorder
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
                 };
-            };
-            mediaRecorder.start();
-            micBtn.classList.add('recording');
-            document.getElementById('recordingStatus').style.display='block';
-        };
-        micBtn.onmouseup = () => {
-            if(mediaRecorder) mediaRecorder.stop();
+                
+                mediaRecorder.onstop = async () => {
+                    // Create audio blob
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    
+                    // Convert to Base64
+                    const reader = new FileReader();
+                    reader.readAsDataURL(audioBlob);
+                    reader.onloadend = () => {
+                        const base64Audio = reader.result;
+                        
+                        // Send via socket
+                        socket.emit('send-voice', {
+                            roomCode: currentRoom,
+                            user: currentUser,
+                            audio: base64Audio
+                        });
+                        
+                        // Display own voice message
+                        appendVoiceMessage({
+                            user: currentUser,
+                            audio: base64Audio,
+                            isOwn: true
+                        });
+                    };
+                    
+                    // Stop all tracks
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                
+                // Start recording
+                mediaRecorder.start();
+                isRecording = true;
+                
+                // UI Feedback
+                micBtn.classList.add('recording');
+                recordingIndicator.classList.add('active');
+                
+                console.log('🎙️ Recording started');
+                
+            } catch (err) {
+                console.error('❌ Recording failed:', err);
+                alert('Could not start recording. Please check microphone permissions.');
+            }
+        }
+
+        // Stop Recording (on mouseup)
+        function stopRecording() {
+            if (!isRecording || !mediaRecorder) return;
+            
+            mediaRecorder.stop();
+            isRecording = false;
+            
+            // UI Feedback
             micBtn.classList.remove('recording');
-            document.getElementById('recordingStatus').style.display='none';
-        };
+            recordingIndicator.classList.remove('active');
+            
+            console.log('⏹️ Recording stopped');
+        }
 
-        socket.on('receive-message', data => appendMsg({ ...data, isOwn: false }));
-        socket.on('receive-voice', data => appendVoice({ ...data, isOwn: false }));
-        socket.on('system-message', text => {
-            const div = document.createElement('div'); div.className='system-message'; div.innerText=text;
-            messagesDiv.appendChild(div);
+        // Mic Button Event Listeners
+        micBtn.addEventListener('mousedown', startRecording);
+        micBtn.addEventListener('mouseup', stopRecording);
+        micBtn.addEventListener('mouseleave', stopRecording); // Stop if mouse leaves button
+        
+        // Touch events for mobile
+        micBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            startRecording();
         });
-        socket.on('update-users', users => {
-            document.getElementById('userCount').innerText = users.length;
-            document.getElementById('usersList').innerHTML = users.map(u => `<li>${u}</li>`).join('');
-        });
-        socket.on('load-messages', history => {
-            messagesDiv.innerHTML = '';
-            history.forEach(m => appendMsg({ user: m.user, text: m.text, isOwn: m.user === currentUser }));
+        micBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            stopRecording();
         });
 
+        // ===== VOICE MESSAGE DISPLAY =====
+        function appendVoiceMessage(data) {
+            const emptyState = document.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${data.isOwn ? 'own' : ''}`;
+            
+            msgDiv.innerHTML = `
+                <div class="username">${data.isOwn ? 'You' : data.user}</div>
+                <div class="voice-message">
+                    <span class="voice-icon">🎵</span>
+                    <audio controls>
+                        <source src="${data.audio}" type="audio/webm">
+                        Your browser does not support audio playback.
+                    </audio>
+                </div>
+            `;
+            
+            messagesDiv.appendChild(msgDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // ===== SOCKET EVENTS FOR VOICE =====
+        socket.on('receive-voice', (data) => {
+            if (data.user !== currentUser) {
+                appendVoiceMessage({ ...data, isOwn: false });
+            }
+        });
+
+        // ===== EXISTING FUNCTIONS =====
+        
+        // Generate Random Room Code
+        function generateRoomCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('roomCode').value = code;
+            alert(`New room code generated: ${code}\nShare this with friends to join!`);
+        }
+
+        // Copy Room Code
+        function copyRoomCode() {
+            navigator.clipboard.writeText(currentRoom).then(() => {
+                alert('Room code copied to clipboard!');
+            });
+        }
+
+        // Leave Room
+        function leaveRoom() {
+            socket.emit('leave-room', { username: currentUser, roomCode: currentRoom });
+            location.reload();
+        }
+
+        // 1. Join Room
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            currentUser = document.getElementById('username').value.trim();
+            currentRoom = document.getElementById('roomCode').value.trim().toUpperCase();
+            
+            if(currentUser && currentRoom) {
+                socket.emit('join-room', { username: currentUser, roomCode: currentRoom });
+                
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('chatPage').classList.remove('hidden');
+                document.getElementById('displayRoomCode').innerText = currentRoom;
+                
+                // Initialize microphone after joining room
+                initMicrophone();
+            }
+        });
+
+        // 2. Load History
+        socket.on('load-messages', (history) => {
+            messagesDiv.innerHTML = ''; 
+            if (history.length === 0) {
+                messagesDiv.innerHTML = '<div class="empty-state">No messages yet. Start the chat!</div>';
+            } else {
+                history.forEach(msg => {
+                    appendMsg({ 
+                        user: msg.user, 
+                        text: msg.text, 
+                        isOwn: msg.user === currentUser 
+                    });
+                });
+            }
+        });
+
+        // 3. Update Online Users List
+        socket.on('update-users', (users) => {
+            usersList.innerHTML = '';
+            userCount.textContent = users.length;
+            
+            users.forEach(user => {
+                const li = document.createElement('li');
+                li.className = `user-item ${user === currentUser ? 'current' : ''}`;
+                
+                const initials = user.substring(0, 2).toUpperCase();
+                li.innerHTML = `
+                    <div class="user-avatar">${initials}</div>
+                    <span>${user}${user === currentUser ? ' (You)' : ''}</span>
+                `;
+                usersList.appendChild(li);
+            });
+        });
+
+        // 4. Send Text Message
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            if(!text) return;
+
+            appendMsg({ user: currentUser, text: text, isOwn: true });
+            messageInput.value = '';
+
+            socket.emit('send-message', { roomCode: currentRoom, user: currentUser, text: text });
+        }
+
+        // 5. Receive Text Message
+        socket.on('receive-message', (data) => {
+            if (data.user !== currentUser) {
+                appendMsg({ ...data, isOwn: false });
+            }
+        });
+
+        // 6. System Messages
+        socket.on('system-message', (text) => {
+            const sysDiv = document.createElement('div');
+            sysDiv.className = 'system-message';
+            sysDiv.innerText = text;
+            messagesDiv.appendChild(sysDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        });
+
+        // Append Text Message
         function appendMsg(data) {
-            const div = document.createElement('div');
-            div.className = `message ${data.isOwn ? 'own' : ''}`;
-            div.innerHTML = `<div style="font-size:10px; color:#667eea">${data.user}</div><div class="message-text">${data.text}</div>`;
-            messagesDiv.appendChild(div);
+            const emptyState = document.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${data.isOwn ? 'own' : ''}`;
+            msgDiv.innerHTML = `
+                <div class="username">${data.isOwn ? 'You' : data.user}</div>
+                <div class="message-text">${escapeHtml(data.text)}</div>
+            `;
+            messagesDiv.appendChild(msgDiv);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
 
-        function appendVoice(data) {
+        // Security
+        function escapeHtml(text) {
             const div = document.createElement('div');
-            div.className = `message ${data.isOwn ? 'own' : ''}`;
-            div.innerHTML = `<div style="font-size:10px; color:#667eea">${data.user}</div><div class="message-text"><audio src="${data.audioData}" controls></audio></div>`;
-            messagesDiv.appendChild(div);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            div.textContent = text;
+            return div.innerHTML;
         }
+
+        // Enter key
+        messageInput.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') sendMessage();
+        });
+
+        // Handle page close/refresh
+        window.addEventListener('beforeunload', () => {
+            socket.emit('leave-room', { username: currentUser, roomCode: currentRoom });
+        });
     </script>
 </body>
 </html>
