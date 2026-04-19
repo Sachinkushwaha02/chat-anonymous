@@ -14,31 +14,65 @@
         .subtitle { color: #666; font-size: 14px; margin-bottom: 2rem; }
         .input-group { margin-bottom: 1.5rem; }
         label { display: block; font-size: 14px; margin-bottom: 0.5rem; font-weight: 500; }
-        input[type="text"] { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; }
+        input[type="text"] { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; transition: border-color 0.2s; }
         input[type="text"]:focus { outline: none; border-color: #667eea; }
-        .btn { width: 100%; padding: 14px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 16px; }
-        .btn:hover { background: #5568d3; }
-        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        .btn { width: 100%; padding: 14px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 16px; position: relative; }
+        .btn:hover:not(:disabled) { background: #5568d3; transform: translateY(-1px); }
+        .btn:disabled { background: #ccc; cursor: not-allowed; opacity: 0.6; }
         .btn-secondary { background: #f0f0f0; color: #333; margin-top: 10px; }
-        .btn-secondary:hover { background: #e0e0e0; }
+        .btn-secondary:hover:not(:disabled) { background: #e0e0e0; }
         
-        /* Error Alert */
+        /* Loading Spinner */
+        .btn-loading::after {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            right: 15px;
+            margin-top: -8px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spinner 0.6s linear infinite;
+        }
+        @keyframes spinner {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Error Alert - MORE PROMINENT */
         .error-alert {
             background: #fee;
-            border: 1px solid #fcc;
+            border: 2px solid #f44;
             color: #c33;
-            padding: 12px 16px;
+            padding: 16px 20px;
             border-radius: 8px;
-            margin-bottom: 1rem;
-            font-size: 14px;
+            margin-bottom: 1.5rem;
+            font-size: 15px;
+            font-weight: 500;
             display: none;
+            animation: slideDown 0.3s ease-out;
         }
-        .error-alert.show { display: block; animation: shake 0.3s; }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+        .error-alert.show { display: block; }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+        
+        /* Success Alert */
+        .success-alert {
+            background: #efe;
+            border: 2px solid #4a4;
+            color: #262;
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 15px;
+            font-weight: 500;
+            display: none;
+            animation: slideDown 0.3s ease-out;
+        }
+        .success-alert.show { display: block; }
         
         /* Chat Layout */
         .chat-container { display: flex; gap: 1rem; height: 500px; }
@@ -151,8 +185,15 @@
             <h1>Join Chat Room</h1>
             <p class="subtitle">Enter a room code or generate a new one</p>
             
-            <!-- Error Alert -->
-            <div class="error-alert" id="errorAlert"></div>
+            <!-- Error Alert - More Prominent -->
+            <div class="error-alert" id="errorAlert">
+                ❌ Error message will appear here
+            </div>
+            
+            <!-- Success Alert -->
+            <div class="success-alert" id="successAlert">
+                ✅ Success message will appear here
+            </div>
             
             <form id="loginForm">
                 <div class="input-group">
@@ -161,11 +202,11 @@
                 </div>
                 <div class="input-group">
                     <label>Room Code</label>
-                    <input type="text" id="roomCode" placeholder="Enter room code" required style="text-transform: uppercase;">
+                    <input type="text" id="roomCode" placeholder="Enter existing room code" required style="text-transform: uppercase;">
                 </div>
                 <button type="submit" class="btn" id="joinBtn">Join Existing Room</button>
                 <div class="divider">OR</div>
-                <button type="button" class="btn btn-secondary" onclick="generateAndCreateRoom()">🎲 Create New Room with Code</button>
+                <button type="button" class="btn btn-secondary" id="createBtn" onclick="generateAndCreateRoom()">🎲 Create New Room with Code</button>
             </form>
         </div>
 
@@ -229,14 +270,42 @@
         const micBtn = document.getElementById('micBtn');
         const recordingIndicator = document.getElementById('recordingIndicator');
         const errorAlert = document.getElementById('errorAlert');
+        const successAlert = document.getElementById('successAlert');
+        const joinBtn = document.getElementById('joinBtn');
+        const createBtn = document.getElementById('createBtn');
 
         // ===== SHOW ERROR FUNCTION =====
         function showError(message) {
-            errorAlert.textContent = message;
+            console.log('❌ ERROR:', message);
+            
+            // Hide success alert
+            successAlert.classList.remove('show');
+            
+            // Show error alert
+            errorAlert.textContent = '❌ ' + message;
             errorAlert.classList.add('show');
+            
+            // Auto-hide after 5 seconds
             setTimeout(() => {
                 errorAlert.classList.remove('show');
-            }, 4000);
+            }, 5000);
+        }
+
+        // ===== SHOW SUCCESS FUNCTION =====
+        function showSuccess(message) {
+            console.log('✅ SUCCESS:', message);
+            
+            // Hide error alert
+            errorAlert.classList.remove('show');
+            
+            // Show success alert
+            successAlert.textContent = '✅ ' + message;
+            successAlert.classList.add('show');
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                successAlert.classList.remove('show');
+            }, 3000);
         }
 
         // ===== GENERATE AND CREATE NEW ROOM =====
@@ -248,6 +317,11 @@
                 document.getElementById('username').focus();
                 return;
             }
+            
+            // Show loading state
+            createBtn.disabled = true;
+            createBtn.classList.add('btn-loading');
+            createBtn.textContent = 'Creating Room...';
             
             // Generate random room code
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -269,21 +343,35 @@
         socket.on('room-created', (data) => {
             const { roomCode } = data;
             
-            // Switch to chat page
-            document.getElementById('loginPage').classList.add('hidden');
-            document.getElementById('chatPage').classList.remove('hidden');
-            document.getElementById('displayRoomCode').innerText = roomCode;
+            // Reset button
+            createBtn.disabled = false;
+            createBtn.classList.remove('btn-loading');
+            createBtn.textContent = '🎲 Create New Room with Code';
             
-            // Initialize microphone
-            initMicrophone();
+            // Show success
+            showSuccess(`Room created successfully! Code: ${roomCode}`);
+            
+            // Switch to chat page after 1 second
+            setTimeout(() => {
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('chatPage').classList.remove('hidden');
+                document.getElementById('displayRoomCode').innerText = roomCode;
+                
+                // Initialize microphone
+                initMicrophone();
+            }, 1000);
             
             console.log('✅ Room created successfully:', roomCode);
-            alert(`Room created successfully!\n\nRoom Code: ${roomCode}\n\nShare this code with friends to join!`);
         });
 
         // ===== ROOM ALREADY EXISTS =====
         socket.on('room-exists', (data) => {
-            showError(`Room ${data.roomCode} already exists! Please join instead.`);
+            // Reset button
+            createBtn.disabled = false;
+            createBtn.classList.remove('btn-loading');
+            createBtn.textContent = '🎲 Create New Room with Code';
+            
+            showError(`Room ${data.roomCode} already exists! Join it instead.`);
             document.getElementById('roomCode').value = data.roomCode;
         });
 
@@ -299,6 +387,11 @@
                 return;
             }
             
+            // Show loading state
+            joinBtn.disabled = true;
+            joinBtn.classList.add('btn-loading');
+            joinBtn.textContent = 'Joining...';
+            
             currentUser = username;
             currentRoom = roomCode;
             
@@ -310,37 +403,61 @@
 
         // ===== ROOM NOT FOUND =====
         socket.on('room-not-found', (data) => {
+            // Reset button
+            joinBtn.disabled = false;
+            joinBtn.classList.remove('btn-loading');
+            joinBtn.textContent = 'Join Existing Room';
+            
             showError(`Room "${data.roomCode}" does not exist! Please check the code or create a new room.`);
             console.log('❌ Room not found:', data.roomCode);
         });
 
         // ===== ERROR MESSAGE =====
         socket.on('error-message', (message) => {
+            // Reset buttons
+            joinBtn.disabled = false;
+            joinBtn.classList.remove('btn-loading');
+            joinBtn.textContent = 'Join Existing Room';
+            
+            createBtn.disabled = false;
+            createBtn.classList.remove('btn-loading');
+            createBtn.textContent = '🎲 Create New Room with Code';
+            
             showError(message);
         });
 
         // ===== LOAD MESSAGES (Success - Room Joined) =====
         socket.on('load-messages', (history) => {
-            // This means room join was successful
-            document.getElementById('loginPage').classList.add('hidden');
-            document.getElementById('chatPage').classList.remove('hidden');
-            document.getElementById('displayRoomCode').innerText = currentRoom;
+            // Reset button
+            joinBtn.disabled = false;
+            joinBtn.classList.remove('btn-loading');
+            joinBtn.textContent = 'Join Existing Room';
             
-            // Initialize microphone
-            initMicrophone();
+            // Show success
+            showSuccess('Successfully joined the room!');
             
-            messagesDiv.innerHTML = ''; 
-            if (history.length === 0) {
-                messagesDiv.innerHTML = '<div class="empty-state">No messages yet. Start the chat!</div>';
-            } else {
-                history.forEach(msg => {
-                    appendMsg({ 
-                        user: msg.user, 
-                        text: msg.text, 
-                        isOwn: msg.user === currentUser 
+            // Switch to chat page after 1 second
+            setTimeout(() => {
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('chatPage').classList.remove('hidden');
+                document.getElementById('displayRoomCode').innerText = currentRoom;
+                
+                // Initialize microphone
+                initMicrophone();
+                
+                messagesDiv.innerHTML = ''; 
+                if (history.length === 0) {
+                    messagesDiv.innerHTML = '<div class="empty-state">No messages yet. Start the chat!</div>';
+                } else {
+                    history.forEach(msg => {
+                        appendMsg({ 
+                            user: msg.user, 
+                            text: msg.text, 
+                            isOwn: msg.user === currentUser 
+                        });
                     });
-                });
-            }
+                }
+            }, 1000);
         });
 
         // ===== VOICE RECORDING SETUP =====
