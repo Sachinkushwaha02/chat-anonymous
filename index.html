@@ -18,8 +18,27 @@
         input[type="text"]:focus { outline: none; border-color: #667eea; }
         .btn { width: 100%; padding: 14px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 16px; }
         .btn:hover { background: #5568d3; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
         .btn-secondary { background: #f0f0f0; color: #333; margin-top: 10px; }
         .btn-secondary:hover { background: #e0e0e0; }
+        
+        /* Error Alert */
+        .error-alert {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 14px;
+            display: none;
+        }
+        .error-alert.show { display: block; animation: shake 0.3s; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
         
         /* Chat Layout */
         .chat-container { display: flex; gap: 1rem; height: 500px; }
@@ -131,6 +150,10 @@
         <div id="loginPage" class="card">
             <h1>Join Chat Room</h1>
             <p class="subtitle">Enter a room code or generate a new one</p>
+            
+            <!-- Error Alert -->
+            <div class="error-alert" id="errorAlert"></div>
+            
             <form id="loginForm">
                 <div class="input-group">
                     <label>Your Name</label>
@@ -140,9 +163,9 @@
                     <label>Room Code</label>
                     <input type="text" id="roomCode" placeholder="Enter room code" required style="text-transform: uppercase;">
                 </div>
-                <button type="submit" class="btn">Join Room</button>
+                <button type="submit" class="btn" id="joinBtn">Join Existing Room</button>
                 <div class="divider">OR</div>
-                <button type="button" class="btn btn-secondary" onclick="generateRoomCode()">🎲 Generate New Room Code</button>
+                <button type="button" class="btn btn-secondary" onclick="generateAndCreateRoom()">🎲 Create New Room with Code</button>
             </form>
         </div>
 
@@ -205,190 +228,107 @@
         const userCount = document.getElementById('userCount');
         const micBtn = document.getElementById('micBtn');
         const recordingIndicator = document.getElementById('recordingIndicator');
+        const errorAlert = document.getElementById('errorAlert');
 
-        // ===== VOICE RECORDING SETUP =====
-        let mediaRecorder = null;
-        let audioChunks = [];
-        let isRecording = false;
+        // ===== SHOW ERROR FUNCTION =====
+        function showError(message) {
+            errorAlert.textContent = message;
+            errorAlert.classList.add('show');
+            setTimeout(() => {
+                errorAlert.classList.remove('show');
+            }, 4000);
+        }
 
-        // Request microphone permission on page load
-        async function initMicrophone() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                console.log('🎤 Microphone access granted');
-                // Stop the stream immediately (we'll request again when recording)
-                stream.getTracks().forEach(track => track.stop());
-            } catch (err) {
-                console.error('❌ Microphone access denied:', err);
-                alert('Please allow microphone access to send voice messages!');
+        // ===== GENERATE AND CREATE NEW ROOM =====
+        function generateAndCreateRoom() {
+            const username = document.getElementById('username').value.trim();
+            
+            if (!username) {
+                showError('Please enter your name first!');
+                document.getElementById('username').focus();
+                return;
             }
-        }
-
-        // Start Recording (on mousedown)
-        async function startRecording() {
-            if (isRecording) return;
             
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                
-                // Create MediaRecorder
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
-                
-                mediaRecorder.ondataavailable = (event) => {
-                    audioChunks.push(event.data);
-                };
-                
-                mediaRecorder.onstop = async () => {
-                    // Create audio blob
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    
-                    // Convert to Base64
-                    const reader = new FileReader();
-                    reader.readAsDataURL(audioBlob);
-                    reader.onloadend = () => {
-                        const base64Audio = reader.result;
-                        
-                        // Send via socket
-                        socket.emit('send-voice', {
-                            roomCode: currentRoom,
-                            user: currentUser,
-                            audio: base64Audio
-                        });
-                        
-                        // Display own voice message
-                        appendVoiceMessage({
-                            user: currentUser,
-                            audio: base64Audio,
-                            isOwn: true
-                        });
-                    };
-                    
-                    // Stop all tracks
-                    stream.getTracks().forEach(track => track.stop());
-                };
-                
-                // Start recording
-                mediaRecorder.start();
-                isRecording = true;
-                
-                // UI Feedback
-                micBtn.classList.add('recording');
-                recordingIndicator.classList.add('active');
-                
-                console.log('🎙️ Recording started');
-                
-            } catch (err) {
-                console.error('❌ Recording failed:', err);
-                alert('Could not start recording. Please check microphone permissions.');
-            }
-        }
-
-        // Stop Recording (on mouseup)
-        function stopRecording() {
-            if (!isRecording || !mediaRecorder) return;
-            
-            mediaRecorder.stop();
-            isRecording = false;
-            
-            // UI Feedback
-            micBtn.classList.remove('recording');
-            recordingIndicator.classList.remove('active');
-            
-            console.log('⏹️ Recording stopped');
-        }
-
-        // Mic Button Event Listeners
-        micBtn.addEventListener('mousedown', startRecording);
-        micBtn.addEventListener('mouseup', stopRecording);
-        micBtn.addEventListener('mouseleave', stopRecording); // Stop if mouse leaves button
-        
-        // Touch events for mobile
-        micBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            startRecording();
-        });
-        micBtn.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            stopRecording();
-        });
-
-        // ===== VOICE MESSAGE DISPLAY =====
-        function appendVoiceMessage(data) {
-            const emptyState = document.querySelector('.empty-state');
-            if (emptyState) emptyState.remove();
-
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${data.isOwn ? 'own' : ''}`;
-            
-            msgDiv.innerHTML = `
-                <div class="username">${data.isOwn ? 'You' : data.user}</div>
-                <div class="voice-message">
-                    <span class="voice-icon">🎵</span>
-                    <audio controls>
-                        <source src="${data.audio}" type="audio/webm">
-                        Your browser does not support audio playback.
-                    </audio>
-                </div>
-            `;
-            
-            messagesDiv.appendChild(msgDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-
-        // ===== SOCKET EVENTS FOR VOICE =====
-        socket.on('receive-voice', (data) => {
-            if (data.user !== currentUser) {
-                appendVoiceMessage({ ...data, isOwn: false });
-            }
-        });
-
-        // ===== EXISTING FUNCTIONS =====
-        
-        // Generate Random Room Code
-        function generateRoomCode() {
+            // Generate random room code
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let code = '';
             for (let i = 0; i < 6; i++) {
                 code += chars.charAt(Math.floor(Math.random() * chars.length));
             }
-            document.getElementById('roomCode').value = code;
-            alert(`New room code generated: ${code}\nShare this with friends to join!`);
-        }
-
-        // Copy Room Code
-        function copyRoomCode() {
-            navigator.clipboard.writeText(currentRoom).then(() => {
-                alert('Room code copied to clipboard!');
-            });
-        }
-
-        // Leave Room
-        function leaveRoom() {
-            socket.emit('leave-room', { username: currentUser, roomCode: currentRoom });
-            location.reload();
-        }
-
-        // 1. Join Room
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            currentUser = document.getElementById('username').value.trim();
-            currentRoom = document.getElementById('roomCode').value.trim().toUpperCase();
             
-            if(currentUser && currentRoom) {
-                socket.emit('join-room', { username: currentUser, roomCode: currentRoom });
-                
-                document.getElementById('loginPage').classList.add('hidden');
-                document.getElementById('chatPage').classList.remove('hidden');
-                document.getElementById('displayRoomCode').innerText = currentRoom;
-                
-                // Initialize microphone after joining room
-                initMicrophone();
-            }
+            currentUser = username;
+            currentRoom = code;
+            
+            // Create room on server
+            socket.emit('create-room', { username, roomCode: code });
+            
+            console.log('🆕 Creating new room:', code);
+        }
+
+        // ===== ROOM CREATED SUCCESS =====
+        socket.on('room-created', (data) => {
+            const { roomCode } = data;
+            
+            // Switch to chat page
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('chatPage').classList.remove('hidden');
+            document.getElementById('displayRoomCode').innerText = roomCode;
+            
+            // Initialize microphone
+            initMicrophone();
+            
+            console.log('✅ Room created successfully:', roomCode);
+            alert(`Room created successfully!\n\nRoom Code: ${roomCode}\n\nShare this code with friends to join!`);
         });
 
-        // 2. Load History
+        // ===== ROOM ALREADY EXISTS =====
+        socket.on('room-exists', (data) => {
+            showError(`Room ${data.roomCode} already exists! Please join instead.`);
+            document.getElementById('roomCode').value = data.roomCode;
+        });
+
+        // ===== JOIN EXISTING ROOM =====
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const roomCode = document.getElementById('roomCode').value.trim().toUpperCase();
+            
+            if (!username || !roomCode) {
+                showError('Please fill in all fields!');
+                return;
+            }
+            
+            currentUser = username;
+            currentRoom = roomCode;
+            
+            // Attempt to join room
+            socket.emit('join-room', { username, roomCode });
+            
+            console.log('🚪 Attempting to join room:', roomCode);
+        });
+
+        // ===== ROOM NOT FOUND =====
+        socket.on('room-not-found', (data) => {
+            showError(`Room "${data.roomCode}" does not exist! Please check the code or create a new room.`);
+            console.log('❌ Room not found:', data.roomCode);
+        });
+
+        // ===== ERROR MESSAGE =====
+        socket.on('error-message', (message) => {
+            showError(message);
+        });
+
+        // ===== LOAD MESSAGES (Success - Room Joined) =====
         socket.on('load-messages', (history) => {
+            // This means room join was successful
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('chatPage').classList.remove('hidden');
+            document.getElementById('displayRoomCode').innerText = currentRoom;
+            
+            // Initialize microphone
+            initMicrophone();
+            
             messagesDiv.innerHTML = ''; 
             if (history.length === 0) {
                 messagesDiv.innerHTML = '<div class="empty-state">No messages yet. Start the chat!</div>';
@@ -403,15 +343,123 @@
             }
         });
 
-        // 3. Update Online Users List
+        // ===== VOICE RECORDING SETUP =====
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+
+        async function initMicrophone() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                console.log('🎤 Microphone access granted');
+                stream.getTracks().forEach(track => track.stop());
+            } catch (err) {
+                console.error('❌ Microphone access denied:', err);
+            }
+        }
+
+        async function startRecording() {
+            if (isRecording) return;
+            
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+                
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const reader = new FileReader();
+                    reader.readAsDataURL(audioBlob);
+                    reader.onloadend = () => {
+                        const base64Audio = reader.result;
+                        socket.emit('send-voice', {
+                            roomCode: currentRoom,
+                            user: currentUser,
+                            audio: base64Audio
+                        });
+                        appendVoiceMessage({
+                            user: currentUser,
+                            audio: base64Audio,
+                            isOwn: true
+                        });
+                    };
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                
+                mediaRecorder.start();
+                isRecording = true;
+                micBtn.classList.add('recording');
+                recordingIndicator.classList.add('active');
+                console.log('🎙️ Recording started');
+                
+            } catch (err) {
+                console.error('❌ Recording failed:', err);
+                alert('Could not start recording. Please check microphone permissions.');
+            }
+        }
+
+        function stopRecording() {
+            if (!isRecording || !mediaRecorder) return;
+            mediaRecorder.stop();
+            isRecording = false;
+            micBtn.classList.remove('recording');
+            recordingIndicator.classList.remove('active');
+            console.log('⏹️ Recording stopped');
+        }
+
+        micBtn.addEventListener('mousedown', startRecording);
+        micBtn.addEventListener('mouseup', stopRecording);
+        micBtn.addEventListener('mouseleave', stopRecording);
+        micBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startRecording(); });
+        micBtn.addEventListener('touchend', (e) => { e.preventDefault(); stopRecording(); });
+
+        function appendVoiceMessage(data) {
+            const emptyState = document.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${data.isOwn ? 'own' : ''}`;
+            msgDiv.innerHTML = `
+                <div class="username">${data.isOwn ? 'You' : data.user}</div>
+                <div class="voice-message">
+                    <span class="voice-icon">🎵</span>
+                    <audio controls>
+                        <source src="${data.audio}" type="audio/webm">
+                    </audio>
+                </div>
+            `;
+            messagesDiv.appendChild(msgDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        socket.on('receive-voice', (data) => {
+            if (data.user !== currentUser) {
+                appendVoiceMessage({ ...data, isOwn: false });
+            }
+        });
+
+        // ===== OTHER FUNCTIONS =====
+        function copyRoomCode() {
+            navigator.clipboard.writeText(currentRoom).then(() => {
+                alert('Room code copied to clipboard!');
+            });
+        }
+
+        function leaveRoom() {
+            socket.emit('leave-room', { username: currentUser, roomCode: currentRoom });
+            location.reload();
+        }
+
         socket.on('update-users', (users) => {
             usersList.innerHTML = '';
             userCount.textContent = users.length;
-            
             users.forEach(user => {
                 const li = document.createElement('li');
                 li.className = `user-item ${user === currentUser ? 'current' : ''}`;
-                
                 const initials = user.substring(0, 2).toUpperCase();
                 li.innerHTML = `
                     <div class="user-avatar">${initials}</div>
@@ -421,25 +469,20 @@
             });
         });
 
-        // 4. Send Text Message
         function sendMessage() {
             const text = messageInput.value.trim();
             if(!text) return;
-
             appendMsg({ user: currentUser, text: text, isOwn: true });
             messageInput.value = '';
-
             socket.emit('send-message', { roomCode: currentRoom, user: currentUser, text: text });
         }
 
-        // 5. Receive Text Message
         socket.on('receive-message', (data) => {
             if (data.user !== currentUser) {
                 appendMsg({ ...data, isOwn: false });
             }
         });
 
-        // 6. System Messages
         socket.on('system-message', (text) => {
             const sysDiv = document.createElement('div');
             sysDiv.className = 'system-message';
@@ -448,7 +491,6 @@
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         });
 
-        // Append Text Message
         function appendMsg(data) {
             const emptyState = document.querySelector('.empty-state');
             if (emptyState) emptyState.remove();
@@ -463,19 +505,16 @@
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
 
-        // Security
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // Enter key
         messageInput.addEventListener('keypress', (e) => {
             if(e.key === 'Enter') sendMessage();
         });
 
-        // Handle page close/refresh
         window.addEventListener('beforeunload', () => {
             socket.emit('leave-room', { username: currentUser, roomCode: currentRoom });
         });
