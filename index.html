@@ -19,28 +19,32 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
+        html {
+            height: 100%;
+        }
+
         body { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
             background: var(--dark-bg);
             color: var(--text-white);
-            min-height: 100vh;
+            min-height: 100%;
             overflow-x: hidden;
-            position: fixed;
-            width: 100%;
-            height: 100%;
         }
 
         /* ===== LANDING PAGE ===== */
+        /* FIX 1: Remove position:fixed from body when on landing page.
+           The landing page gets its own scrollable container. */
         #introPage {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
+            justify-content: flex-start;
+            padding: 60px 20px 80px;
             background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
             position: relative;
-            overflow-y: auto;
+            overflow-y: auto; /* allow scrolling within this container */
+            overflow-x: hidden;
         }
 
         .intro-glow {
@@ -58,6 +62,7 @@
             margin-bottom: 20px;
             filter: drop-shadow(0 0 30px rgba(127,90,240,0.5));
             animation: float 3s ease-in-out infinite;
+            margin-top: 40px;
         }
 
         @keyframes float {
@@ -144,11 +149,12 @@
         }
 
         .credits {
-            margin-top: 100px;
+            margin-top: 60px;
             padding: 40px;
             border-top: 1px solid var(--border-subtle);
             text-align: center;
             max-width: 700px;
+            width: 100%;
         }
 
         .credits-title {
@@ -175,6 +181,7 @@
         /* ===== CHAT SECTION ===== */
         .hidden { display: none !important; }
 
+        /* FIX 1 (continued): Chat section uses fixed positioning + body gets locked */
         #chatSection {
             height: 100vh;
             height: 100dvh;
@@ -184,6 +191,12 @@
             width: 100%;
             top: 0;
             left: 0;
+        }
+
+        body.chat-active {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
         }
 
         /* Sidebar */
@@ -206,9 +219,7 @@
             border-bottom: 1px solid var(--border-subtle);
         }
 
-        .sidebar-logo {
-            font-size: 28px;
-        }
+        .sidebar-logo { font-size: 28px; }
 
         .sidebar-title {
             font-size: 18px;
@@ -264,9 +275,7 @@
             transition: all 0.2s;
         }
 
-        .user-pill:hover {
-            background: rgba(127,90,240,0.2);
-        }
+        .user-pill:hover { background: rgba(127,90,240,0.2); }
 
         .user-pill.current {
             background: rgba(255,110,199,0.15);
@@ -279,6 +288,7 @@
             background: var(--accent-cyan);
             border-radius: 50%;
             animation: pulse 2s infinite;
+            flex-shrink: 0;
         }
 
         @keyframes pulse {
@@ -362,9 +372,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .message.own {
-            flex-direction: row-reverse;
-        }
+        .message.own { flex-direction: row-reverse; }
 
         .avatar {
             width: 40px;
@@ -415,35 +423,100 @@
             border-color: rgba(127,90,240,0.3);
         }
 
-        /* VOICE PLAYER FIX */
+        /* ===== FIX 2: VOICE PLAYER - complete rewrite ===== */
+        /* The old audio element was unstyled and broken on mobile.
+           We use a custom player with JS controls that works everywhere. */
         .voice-player {
-            margin-top: 8px;
+            margin-top: 6px;
             background: var(--card-bg);
             border: 1px solid var(--border-subtle);
-            padding: 10px;
+            padding: 10px 14px;
             border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 220px;
+            max-width: 280px;
         }
 
         .message.own .voice-player {
-            background: rgba(127,90,240,0.1);
-            border-color: rgba(127,90,240,0.3);
+            background: rgba(127,90,240,0.12);
+            border-color: rgba(127,90,240,0.35);
         }
 
-        .voice-player audio {
-            width: 100%;
-            max-width: 280px;
-            height: 42px;
-            outline: none;
-        }
-
-        audio::-webkit-media-controls-panel {
-            background-color: rgba(255,255,255,0.05);
-        }
-
-        audio::-webkit-media-controls-play-button {
-            background-color: var(--accent-purple);
+        .vp-play-btn {
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
+            background: linear-gradient(135deg, #7f5af0, #ff6ec7);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 14px;
+            transition: transform 0.15s, opacity 0.15s;
+            -webkit-tap-highlight-color: transparent;
         }
+
+        .vp-play-btn:active { transform: scale(0.92); opacity: 0.85; }
+
+        .vp-waveform {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+
+        .vp-progress-track {
+            height: 4px;
+            background: rgba(255,255,255,0.12);
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vp-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #7f5af0, #ff6ec7);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .vp-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        .vp-bars {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            height: 20px;
+        }
+
+        .vp-bar {
+            width: 3px;
+            border-radius: 2px;
+            background: rgba(127,90,240,0.5);
+            animation: none;
+        }
+
+        .vp-bar.playing {
+            animation: barBounce 0.6s ease-in-out infinite alternate;
+        }
+
+        @keyframes barBounce {
+            from { transform: scaleY(0.3); }
+            to   { transform: scaleY(1); }
+        }
+
+        /* ===== END VOICE PLAYER FIX ===== */
 
         .system-msg {
             text-align: center;
@@ -465,7 +538,7 @@
             opacity: 0.5;
         }
 
-        /* Input Area - MOBILE FIX */
+        /* Input Area */
         .input-area {
             padding: 15px 20px;
             padding-bottom: max(15px, env(safe-area-inset-bottom));
@@ -524,9 +597,7 @@
             min-width: 0;
         }
 
-        #messageInput::placeholder {
-            color: var(--text-muted);
-        }
+        #messageInput::placeholder { color: var(--text-muted); }
 
         .input-btn {
             background: none;
@@ -545,9 +616,7 @@
             transform: scale(0.95);
         }
 
-        .send-btn {
-            color: var(--accent-purple);
-        }
+        .send-btn { color: var(--accent-purple); }
 
         .mic-btn.recording {
             color: #ff6b6b;
@@ -607,7 +676,7 @@
 
         @keyframes slideDown {
             from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
         .alert.error {
@@ -654,14 +723,8 @@
             position: relative;
         }
 
-        .modal-btn:active {
-            transform: scale(0.98);
-        }
-
-        .modal-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .modal-btn:active { transform: scale(0.98); }
+        .modal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .modal-btn.loading::after {
             content: "";
@@ -677,9 +740,7 @@
             animation: spin 0.6s linear infinite;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .modal-btn.secondary {
             background: var(--darker-bg);
@@ -705,50 +766,40 @@
         }
 
         .divider::before { left: 0; }
-        .divider::after { right: 0; }
+        .divider::after  { right: 0; }
 
-        /* MOBILE FIXES */
+        /* MOBILE */
         @media (max-width: 768px) {
-            .sidebar { 
-                display: none !important; 
-            }
-            
-            .chat-header {
-                padding: 15px 20px;
-            }
+            .sidebar { display: none !important; }
+
+            .chat-header { padding: 15px 20px; }
 
             .messages-area {
                 padding: 15px;
                 padding-bottom: 20px;
             }
 
-            .message-content {
-                max-width: 80%;
-            }
+            .message-content { max-width: 80%; }
 
             .input-area {
                 padding: 12px 15px;
                 padding-bottom: max(20px, env(safe-area-inset-bottom));
             }
 
-            .intro-title { 
-                font-size: 36px; 
-            }
-            
-            .features { 
+            .intro-title { font-size: 36px; }
+
+            .features {
                 grid-template-columns: 1fr;
                 margin: 40px 0 40px;
             }
 
-            .modal {
-                padding: 30px 25px;
-            }
+            .modal { padding: 30px 25px; }
+
+            .voice-player { min-width: 180px; max-width: 230px; }
         }
 
         @media (max-width: 480px) {
-            .chat-title {
-                font-size: 18px;
-            }
+            .chat-title { font-size: 18px; }
 
             .avatar {
                 width: 36px;
@@ -805,7 +856,6 @@
 
     <!-- ===== CHAT SECTION ===== -->
     <div id="chatSection" class="hidden">
-        <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">💬</div>
@@ -827,7 +877,6 @@
             </button>
         </div>
 
-        <!-- Main Chat Area -->
         <div class="main-chat">
             <div class="chat-header">
                 <div class="chat-title">Private Room</div>
@@ -867,9 +916,7 @@
             <input type="text" id="roomCode" class="input-field" placeholder="Room code (optional)" style="text-transform: uppercase;" />
 
             <button class="modal-btn" id="joinBtn" onclick="joinRoom()">Join Room</button>
-            
             <div class="divider">OR</div>
-            
             <button class="modal-btn secondary" id="createBtn" onclick="createRoom()">Create New Room</button>
         </div>
     </div>
@@ -880,13 +927,13 @@
         let currentUser = '';
         let currentRoom = '';
 
-        const messagesDiv = document.getElementById('messages');
+        const messagesDiv  = document.getElementById('messages');
         const messageInput = document.getElementById('messageInput');
-        const usersList = document.getElementById('usersList');
-        const userCount = document.getElementById('userCount');
-        const micBtn = document.getElementById('micBtn');
+        const usersList    = document.getElementById('usersList');
+        const userCount    = document.getElementById('userCount');
+        const micBtn       = document.getElementById('micBtn');
         const recordingBanner = document.getElementById('recordingBanner');
-        const errorAlert = document.getElementById('errorAlert');
+        const errorAlert   = document.getElementById('errorAlert');
         const successAlert = document.getElementById('successAlert');
 
         // ===== NAVIGATION =====
@@ -894,6 +941,8 @@
             document.getElementById('introPage').classList.add('hidden');
             document.getElementById('chatSection').classList.remove('hidden');
             document.getElementById('loginModal').classList.remove('hidden');
+            // Lock body scroll while in chat
+            document.body.classList.add('chat-active');
         }
 
         // ===== ALERTS =====
@@ -914,27 +963,22 @@
         // ===== CREATE ROOM =====
         function createRoom() {
             const username = document.getElementById('username').value.trim();
-            if (!username) {
-                showError('Please enter your name!');
-                return;
-            }
+            if (!username) { showError('Please enter your name!'); return; }
 
             const createBtn = document.getElementById('createBtn');
             createBtn.disabled = true;
             createBtn.classList.add('loading');
-            const originalText = createBtn.textContent;
             createBtn.textContent = 'Creating...';
 
             const code = Math.random().toString(36).substring(2, 8).toUpperCase();
             currentUser = username;
             currentRoom = code;
-
             socket.emit('create-room', { username, roomCode: code });
 
             setTimeout(() => {
                 createBtn.disabled = false;
                 createBtn.classList.remove('loading');
-                createBtn.textContent = originalText;
+                createBtn.textContent = 'Create New Room';
             }, 5000);
         }
 
@@ -942,7 +986,6 @@
             document.getElementById('createBtn').disabled = false;
             document.getElementById('createBtn').classList.remove('loading');
             document.getElementById('createBtn').textContent = 'Create New Room';
-
             showSuccess(`Room created! Code: ${data.roomCode}`);
             setTimeout(() => {
                 document.getElementById('loginModal').classList.add('hidden');
@@ -955,11 +998,7 @@
         function joinRoom() {
             const username = document.getElementById('username').value.trim();
             const roomCode = document.getElementById('roomCode').value.trim().toUpperCase();
-
-            if (!username || !roomCode) {
-                showError('Please fill in all fields!');
-                return;
-            }
+            if (!username || !roomCode) { showError('Please fill in all fields!'); return; }
 
             const joinBtn = document.getElementById('joinBtn');
             joinBtn.disabled = true;
@@ -968,7 +1007,6 @@
 
             currentUser = username;
             currentRoom = roomCode;
-
             socket.emit('join-room', { username, roomCode });
 
             setTimeout(() => {
@@ -982,7 +1020,6 @@
             document.getElementById('joinBtn').disabled = false;
             document.getElementById('joinBtn').classList.remove('loading');
             document.getElementById('joinBtn').textContent = 'Join Room';
-
             showSuccess('Successfully joined!');
             setTimeout(() => {
                 document.getElementById('loginModal').classList.add('hidden');
@@ -991,16 +1028,14 @@
             }, 1000);
         });
 
-        // ===== ERROR HANDLING =====
+        // ===== ERRORS =====
         socket.on('room-error', (data) => {
             document.getElementById('joinBtn').disabled = false;
             document.getElementById('joinBtn').classList.remove('loading');
             document.getElementById('joinBtn').textContent = 'Join Room';
-
             document.getElementById('createBtn').disabled = false;
             document.getElementById('createBtn').classList.remove('loading');
             document.getElementById('createBtn').textContent = 'Create New Room';
-
             showError(data.message);
         });
 
@@ -1010,9 +1045,7 @@
             if (history.length === 0) {
                 messagesDiv.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><p>No messages yet. Start the conversation!</p></div>';
             } else {
-                history.forEach(msg => {
-                    appendMessage({ user: msg.user, text: msg.text, isOwn: msg.user === currentUser });
-                });
+                history.forEach(msg => appendMessage({ user: msg.user, text: msg.text, isOwn: msg.user === currentUser }));
             }
         });
 
@@ -1020,24 +1053,18 @@
         function sendMessage() {
             const text = messageInput.value.trim();
             if (!text) return;
-
             appendMessage({ user: currentUser, text, isOwn: true });
             socket.emit('send-message', { roomCode: currentRoom, user: currentUser, text });
             messageInput.value = '';
         }
 
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
+        messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 
-        // ===== RECEIVE MESSAGE =====
         socket.on('receive-message', (data) => {
-            if (data.user !== currentUser) {
-                appendMessage({ ...data, isOwn: false });
-            }
+            if (data.user !== currentUser) appendMessage({ ...data, isOwn: false });
         });
 
-        // ===== APPEND MESSAGE =====
+        // ===== APPEND TEXT MESSAGE =====
         function appendMessage(data) {
             const emptyState = document.querySelector('.empty-state');
             if (emptyState) emptyState.remove();
@@ -1058,45 +1085,50 @@
 
         // ===== VOICE RECORDING =====
         let mediaRecorder = null;
-        let audioChunks = [];
-        let isRecording = false;
+        let audioChunks   = [];
+        let isRecording   = false;
 
         async function initMicrophone() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                stream.getTracks().forEach(track => track.stop());
-                console.log('🎤 Mic access granted');
-            } catch (err) {
-                console.error('❌ Mic access denied:', err);
-            }
+                stream.getTracks().forEach(t => t.stop());
+            } catch(e) { console.warn('Mic access:', e); }
         }
 
         async function startRecording() {
             if (isRecording) return;
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
+                // Prefer widely-supported format
+                const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+                    ? 'audio/webm;codecs=opus'
+                    : MediaRecorder.isTypeSupported('audio/webm')
+                    ? 'audio/webm'
+                    : MediaRecorder.isTypeSupported('audio/mp4')
+                    ? 'audio/mp4'
+                    : '';
 
-                mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+                mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+                audioChunks   = [];
+
+                mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
                 mediaRecorder.onstop = () => {
-                    const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const usedMime = mediaRecorder.mimeType || 'audio/webm';
+                    const blob = new Blob(audioChunks, { type: usedMime });
                     const reader = new FileReader();
                     reader.readAsDataURL(blob);
                     reader.onloadend = () => {
-                        socket.emit('send-voice', { roomCode: currentRoom, user: currentUser, audio: reader.result });
-                        appendVoice({ user: currentUser, audio: reader.result, isOwn: true });
+                        socket.emit('send-voice', { roomCode: currentRoom, user: currentUser, audio: reader.result, mimeType: usedMime });
+                        appendVoice({ user: currentUser, audio: reader.result, mimeType: usedMime, isOwn: true });
                     };
-                    stream.getTracks().forEach(track => track.stop());
+                    stream.getTracks().forEach(t => t.stop());
                 };
 
                 mediaRecorder.start();
                 isRecording = true;
                 micBtn.classList.add('recording');
                 recordingBanner.classList.add('active');
-                console.log('🎙️ Recording started...');
-            } catch (err) {
-                console.error('❌ Recording failed:', err);
+            } catch(err) {
                 showError('Microphone access denied!');
             }
         }
@@ -1107,22 +1139,15 @@
             isRecording = false;
             micBtn.classList.remove('recording');
             recordingBanner.classList.remove('active');
-            console.log('⏹️ Recording stopped');
         }
 
         micBtn.addEventListener('mousedown', startRecording);
         micBtn.addEventListener('mouseup', stopRecording);
         micBtn.addEventListener('mouseleave', stopRecording);
-        micBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            startRecording();
-        });
-        micBtn.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            stopRecording();
-        });
+        micBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startRecording(); });
+        micBtn.addEventListener('touchend',   (e) => { e.preventDefault(); stopRecording(); });
 
-        // ===== APPEND VOICE =====
+        // ===== APPEND VOICE (custom player) =====
         function appendVoice(data) {
             const emptyState = document.querySelector('.empty-state');
             if (emptyState) emptyState.remove();
@@ -1130,29 +1155,108 @@
             const msg = document.createElement('div');
             msg.className = `message ${data.isOwn ? 'own' : ''}`;
             const initials = data.user.substring(0, 2).toUpperCase();
+
+            // Unique ID for each player
+            const pid = 'vp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+
+            // Generate random-looking bar heights for visual waveform
+            const barCount = 20;
+            const bars = Array.from({ length: barCount }, (_, i) => {
+                const h = 20 + Math.sin(i * 1.7) * 12 + Math.random() * 18;
+                return `<div class="vp-bar" style="height:${Math.max(6, h)}px" id="${pid}_bar_${i}"></div>`;
+            }).join('');
+
             msg.innerHTML = `
                 <div class="avatar">${initials}</div>
                 <div class="message-content">
                     <div class="message-author">${data.isOwn ? 'You' : data.user}</div>
-                    <div class="voice-player">
-                        <audio controls preload="metadata">
-                            <source src="${data.audio}" type="audio/webm">
-                            Your browser does not support audio playback.
-                        </audio>
+                    <div class="voice-player" id="${pid}">
+                        <button class="vp-play-btn" id="${pid}_btn" onclick="toggleVoice('${pid}')">▶</button>
+                        <div class="vp-waveform">
+                            <div class="vp-bars">${bars}</div>
+                            <div class="vp-progress-track" id="${pid}_track" onclick="seekVoice(event,'${pid}')">
+                                <div class="vp-progress-fill" id="${pid}_fill"></div>
+                            </div>
+                            <div class="vp-time" id="${pid}_time">0:00</div>
+                        </div>
                     </div>
                 </div>
             `;
             messagesDiv.appendChild(msg);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            // Create hidden Audio element
+            const audio = new Audio(data.audio);
+            audio.preload = 'metadata';
+            window[pid + '_audio'] = audio;
+
+            audio.addEventListener('timeupdate', () => {
+                const pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+                const fill = document.getElementById(pid + '_fill');
+                const timeEl = document.getElementById(pid + '_time');
+                if (fill) fill.style.width = pct + '%';
+                if (timeEl) timeEl.textContent = fmtTime(audio.currentTime);
+            });
+
+            audio.addEventListener('ended', () => {
+                const btn = document.getElementById(pid + '_btn');
+                if (btn) btn.textContent = '▶';
+                // Stop bar animation
+                for (let i = 0; i < barCount; i++) {
+                    const b = document.getElementById(`${pid}_bar_${i}`);
+                    if (b) b.classList.remove('playing');
+                }
+                const fill = document.getElementById(pid + '_fill');
+                if (fill) fill.style.width = '0%';
+            });
+        }
+
+        function toggleVoice(pid) {
+            const audio = window[pid + '_audio'];
+            const btn   = document.getElementById(pid + '_btn');
+            if (!audio || !btn) return;
+
+            if (audio.paused) {
+                audio.play().catch(e => console.warn('Play error:', e));
+                btn.textContent = '⏸';
+                // Animate bars
+                for (let i = 0; i < 20; i++) {
+                    const b = document.getElementById(`${pid}_bar_${i}`);
+                    if (b) {
+                        b.classList.add('playing');
+                        b.style.animationDelay = (i * 0.05) + 's';
+                    }
+                }
+            } else {
+                audio.pause();
+                btn.textContent = '▶';
+                for (let i = 0; i < 20; i++) {
+                    const b = document.getElementById(`${pid}_bar_${i}`);
+                    if (b) b.classList.remove('playing');
+                }
+            }
+        }
+
+        function seekVoice(e, pid) {
+            const audio = window[pid + '_audio'];
+            const track = document.getElementById(pid + '_track');
+            if (!audio || !track || !audio.duration) return;
+            const rect = track.getBoundingClientRect();
+            const pct  = (e.clientX - rect.left) / rect.width;
+            audio.currentTime = pct * audio.duration;
+        }
+
+        function fmtTime(s) {
+            const m = Math.floor(s / 60);
+            const sec = Math.floor(s % 60);
+            return `${m}:${sec.toString().padStart(2, '0')}`;
         }
 
         socket.on('receive-voice', (data) => {
-            if (data.user !== currentUser) {
-                appendVoice({ ...data, isOwn: false });
-            }
+            if (data.user !== currentUser) appendVoice({ ...data, isOwn: false });
         });
 
-        // ===== SYSTEM MESSAGE =====
+        // ===== SYSTEM MESSAGES =====
         socket.on('system-message', (text) => {
             const sys = document.createElement('div');
             sys.className = 'system-msg';
