@@ -768,11 +768,72 @@
         .divider::before { left: 0; }
         .divider::after  { right: 0; }
 
+        /* Mobile room code bar — hidden on desktop, shown on mobile */
+        .mobile-room-bar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 16px;
+            background: var(--darker-bg);
+            border-bottom: 1px solid var(--border-subtle);
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .mobile-room-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .mobile-room-code {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--accent-purple);
+            font-family: monospace;
+            letter-spacing: 2px;
+            flex: 1;
+            text-align: center;
+        }
+
+        .mobile-room-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .room-action-btn {
+            background: rgba(127,90,240,0.15);
+            border: 1px solid rgba(127,90,240,0.3);
+            color: var(--text-white);
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .room-action-btn:active {
+            background: rgba(127,90,240,0.35);
+            transform: scale(0.95);
+        }
+
+        .room-action-btn.copied {
+            background: rgba(44,182,125,0.2);
+            border-color: rgba(44,182,125,0.5);
+            color: var(--accent-cyan);
+        }
+
         /* MOBILE */
         @media (max-width: 768px) {
             .sidebar { display: none !important; }
+            .mobile-room-bar { display: flex !important; }
 
-            .chat-header { padding: 15px 20px; }
+            .chat-header { padding: 12px 16px; }
 
             .messages-area {
                 padding: 15px;
@@ -883,6 +944,16 @@
                 <button class="leave-btn" onclick="leaveRoom()">Leave Room</button>
             </div>
 
+            <!-- Mobile-only room code bar -->
+            <div class="mobile-room-bar" id="mobileRoomBar">
+                <span class="mobile-room-label">Room</span>
+                <span class="mobile-room-code" id="mobileRoomCode">——</span>
+                <div class="mobile-room-actions">
+                    <button class="room-action-btn" id="copyRoomBtn" onclick="copyRoomCode()">📋 Copy</button>
+                    <button class="room-action-btn" onclick="shareRoomCode()">🔗 Share</button>
+                </div>
+            </div>
+
             <div class="messages-area" id="messages">
                 <div class="empty-state">
                     <div class="empty-icon">💬</div>
@@ -990,6 +1061,7 @@
             setTimeout(() => {
                 document.getElementById('loginModal').classList.add('hidden');
                 document.getElementById('sidebarRoomCode').textContent = data.roomCode;
+                document.getElementById('mobileRoomCode').textContent = data.roomCode;
                 initMicrophone();
             }, 1000);
         });
@@ -1024,6 +1096,7 @@
             setTimeout(() => {
                 document.getElementById('loginModal').classList.add('hidden');
                 document.getElementById('sidebarRoomCode').textContent = data.roomCode;
+                document.getElementById('mobileRoomCode').textContent = data.roomCode;
                 initMicrophone();
             }, 1000);
         });
@@ -1275,6 +1348,49 @@
                 </div>
             `).join('');
         });
+
+        // ===== COPY / SHARE ROOM CODE =====
+        function copyRoomCode() {
+            const code = document.getElementById('mobileRoomCode').textContent;
+            if (!code || code === '——') return;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.getElementById('copyRoomBtn');
+                btn.textContent = '✅ Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '📋 Copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(() => {
+                // Fallback for older mobile browsers
+                const el = document.createElement('textarea');
+                el.value = code;
+                el.style.position = 'fixed';
+                el.style.opacity = '0';
+                document.body.appendChild(el);
+                el.focus(); el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                const btn = document.getElementById('copyRoomBtn');
+                btn.textContent = '✅ Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => { btn.textContent = '📋 Copy'; btn.classList.remove('copied'); }, 2000);
+            });
+        }
+
+        function shareRoomCode() {
+            const code = document.getElementById('mobileRoomCode').textContent;
+            if (!code || code === '——') return;
+            const shareText = `Join my Anonymous Chat room! Code: ${code}\n${window.location.href}`;
+            if (navigator.share) {
+                navigator.share({ title: 'Anonymous Chat', text: shareText })
+                    .catch(e => console.log('Share cancelled'));
+            } else {
+                // Fallback: copy full share text
+                navigator.clipboard.writeText(shareText).catch(() => {});
+                showSuccess('Link copied to clipboard!');
+            }
+        }
 
         // ===== UTILITIES =====
         function escapeHtml(text) {
