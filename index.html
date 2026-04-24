@@ -19,9 +19,7 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        html {
-            height: 100%;
-        }
+        html { height: 100%; }
 
         body { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
@@ -32,8 +30,6 @@
         }
 
         /* ===== LANDING PAGE ===== */
-        /* FIX 1: Remove position:fixed from body when on landing page.
-           The landing page gets its own scrollable container. */
         #introPage {
             min-height: 100vh;
             display: flex;
@@ -43,7 +39,7 @@
             padding: 60px 20px 80px;
             background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
             position: relative;
-            overflow-y: auto; /* allow scrolling within this container */
+            overflow-y: auto;
             overflow-x: hidden;
         }
 
@@ -130,10 +126,7 @@
             box-shadow: 0 10px 30px rgba(127,90,240,0.2);
         }
 
-        .feature-icon {
-            font-size: 40px;
-            margin-bottom: 15px;
-        }
+        .feature-icon { font-size: 40px; margin-bottom: 15px; }
 
         .feature-title {
             color: var(--accent-purple);
@@ -167,21 +160,12 @@
             margin-bottom: 20px;
         }
 
-        .credit-item {
-            color: var(--text-muted);
-            font-size: 16px;
-            margin: 10px 0;
-        }
-
-        .credit-item strong {
-            color: var(--accent-cyan);
-            font-weight: 700;
-        }
+        .credit-item { color: var(--text-muted); font-size: 16px; margin: 10px 0; }
+        .credit-item strong { color: var(--accent-cyan); font-weight: 700; }
 
         /* ===== CHAT SECTION ===== */
         .hidden { display: none !important; }
 
-        /* FIX 1 (continued): Chat section uses fixed positioning + body gets locked */
         #chatSection {
             height: 100vh;
             height: 100dvh;
@@ -193,11 +177,7 @@
             left: 0;
         }
 
-        body.chat-active {
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-        }
+        body.chat-active { overflow: hidden; position: fixed; width: 100%; }
 
         /* Sidebar */
         .sidebar {
@@ -220,11 +200,7 @@
         }
 
         .sidebar-logo { font-size: 28px; }
-
-        .sidebar-title {
-            font-size: 18px;
-            font-weight: 700;
-        }
+        .sidebar-title { font-size: 18px; font-weight: 700; }
 
         .room-info-card {
             background: var(--card-bg);
@@ -249,10 +225,7 @@
             font-family: monospace;
         }
 
-        .users-section {
-            flex: 1;
-            overflow-y: auto;
-        }
+        .users-section { flex: 1; overflow-y: auto; }
 
         .users-header {
             font-size: 12px;
@@ -331,10 +304,7 @@
             flex-shrink: 0;
         }
 
-        .chat-title {
-            font-size: 20px;
-            font-weight: 700;
-        }
+        .chat-title { font-size: 20px; font-weight: 700; }
 
         .leave-btn {
             background: none;
@@ -391,10 +361,7 @@
             background: linear-gradient(135deg, #2cb67d 0%, #7f5af0 100%);
         }
 
-        .message-content {
-            max-width: 70%;
-            min-width: 0;
-        }
+        .message-content { max-width: 70%; min-width: 0; }
 
         .message-author {
             font-size: 13px;
@@ -403,10 +370,7 @@
             margin-bottom: 5px;
         }
 
-        .message.own .message-author {
-            color: var(--accent-cyan);
-            text-align: right;
-        }
+        .message.own .message-author { color: var(--accent-cyan); text-align: right; }
 
         .message-text {
             background: var(--card-bg);
@@ -423,9 +387,7 @@
             border-color: rgba(127,90,240,0.3);
         }
 
-        /* ===== FIX 2: VOICE PLAYER - complete rewrite ===== */
-        /* The old audio element was unstyled and broken on mobile.
-           We use a custom player with JS controls that works everywhere. */
+        /* ===== VOICE PLAYER ===== */
         .voice-player {
             margin-top: 6px;
             background: var(--card-bg);
@@ -462,13 +424,7 @@
 
         .vp-play-btn:active { transform: scale(0.92); opacity: 0.85; }
 
-        .vp-waveform {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            min-width: 0;
-        }
+        .vp-waveform { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 
         .vp-progress-track {
             height: 4px;
@@ -487,18 +443,9 @@
             transition: width 0.1s linear;
         }
 
-        .vp-time {
-            font-size: 11px;
-            color: var(--text-muted);
-            font-family: monospace;
-        }
+        .vp-time { font-size: 11px; color: var(--text-muted); font-family: monospace; }
 
-        .vp-bars {
-            display: flex;
-            align-items: center;
-            gap: 2px;
-            height: 20px;
-        }
+        .vp-bars { display: flex; align-items: center; gap: 2px; height: 20px; }
 
         .vp-bar {
             width: 3px;
@@ -507,16 +454,12 @@
             animation: none;
         }
 
-        .vp-bar.playing {
-            animation: barBounce 0.6s ease-in-out infinite alternate;
-        }
+        .vp-bar.playing { animation: barBounce 0.6s ease-in-out infinite alternate; }
 
         @keyframes barBounce {
             from { transform: scaleY(0.3); }
             to   { transform: scaleY(1); }
         }
-
-        /* ===== END VOICE PLAYER FIX ===== */
 
         .system-msg {
             text-align: center;
@@ -526,17 +469,8 @@
             margin: 20px 0;
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 100px 20px;
-            color: var(--text-muted);
-        }
-
-        .empty-icon {
-            font-size: 60px;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
+        .empty-state { text-align: center; padding: 100px 20px; color: var(--text-muted); }
+        .empty-icon { font-size: 60px; margin-bottom: 20px; opacity: 0.5; }
 
         /* Input Area */
         .input-area {
@@ -560,10 +494,7 @@
             display: none;
         }
 
-        .recording-banner.active {
-            display: block;
-            animation: blink 1s infinite;
-        }
+        .recording-banner.active { display: block; animation: blink 1s infinite; }
 
         @keyframes blink {
             0%, 100% { opacity: 1; }
@@ -611,17 +542,9 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        .input-btn:active {
-            background: rgba(255,255,255,0.1);
-            transform: scale(0.95);
-        }
-
+        .input-btn:active { background: rgba(255,255,255,0.1); transform: scale(0.95); }
         .send-btn { color: var(--accent-purple); }
-
-        .mic-btn.recording {
-            color: #ff6b6b;
-            animation: pulse 1s infinite;
-        }
+        .mic-btn.recording { color: #ff6b6b; animation: pulse 1s infinite; }
 
         /* Login Modal */
         .modal-overlay {
@@ -654,11 +577,7 @@
             -webkit-text-fill-color: transparent;
         }
 
-        .modal-subtitle {
-            color: var(--text-muted);
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
+        .modal-subtitle { color: var(--text-muted); margin-bottom: 30px; font-size: 14px; }
 
         .alert {
             padding: 14px 18px;
@@ -669,27 +588,15 @@
             display: none;
         }
 
-        .alert.show {
-            display: block;
-            animation: slideDown 0.3s;
-        }
+        .alert.show { display: block; animation: slideDown 0.3s; }
 
         @keyframes slideDown {
             from { opacity: 0; transform: translateY(-10px); }
             to   { opacity: 1; transform: translateY(0); }
         }
 
-        .alert.error {
-            background: rgba(255,0,0,0.1);
-            border: 1px solid rgba(255,0,0,0.3);
-            color: #ff6b6b;
-        }
-
-        .alert.success {
-            background: rgba(44,182,125,0.1);
-            border: 1px solid rgba(44,182,125,0.3);
-            color: var(--accent-cyan);
-        }
+        .alert.error { background: rgba(255,0,0,0.1); border: 1px solid rgba(255,0,0,0.3); color: #ff6b6b; }
+        .alert.success { background: rgba(44,182,125,0.1); border: 1px solid rgba(44,182,125,0.3); color: var(--accent-cyan); }
 
         .input-field {
             width: 100%;
@@ -703,10 +610,7 @@
             transition: all 0.2s;
         }
 
-        .input-field:focus {
-            outline: none;
-            border-color: var(--accent-purple);
-        }
+        .input-field:focus { outline: none; border-color: var(--accent-purple); }
 
         .modal-btn {
             width: 100%;
@@ -742,10 +646,7 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .modal-btn.secondary {
-            background: var(--darker-bg);
-            border: 1px solid var(--border-subtle);
-        }
+        .modal-btn.secondary { background: var(--darker-bg); border: 1px solid var(--border-subtle); }
 
         .divider {
             text-align: center;
@@ -755,8 +656,7 @@
             position: relative;
         }
 
-        .divider::before,
-        .divider::after {
+        .divider::before, .divider::after {
             content: "";
             position: absolute;
             top: 50%;
@@ -768,7 +668,7 @@
         .divider::before { left: 0; }
         .divider::after  { right: 0; }
 
-        /* Mobile room code bar — hidden on desktop, shown on mobile */
+        /* Mobile room code bar */
         .mobile-room-bar {
             display: none;
             align-items: center;
@@ -780,29 +680,10 @@
             flex-shrink: 0;
         }
 
-        .mobile-room-label {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            white-space: nowrap;
-        }
+        .mobile-room-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+        .mobile-room-code { font-size: 16px; font-weight: 800; color: var(--accent-purple); font-family: monospace; letter-spacing: 2px; flex: 1; text-align: center; }
 
-        .mobile-room-code {
-            font-size: 16px;
-            font-weight: 800;
-            color: var(--accent-purple);
-            font-family: monospace;
-            letter-spacing: 2px;
-            flex: 1;
-            text-align: center;
-        }
-
-        .mobile-room-actions {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-        }
+        .mobile-room-actions { display: flex; gap: 6px; align-items: center; }
 
         .room-action-btn {
             background: rgba(127,90,240,0.15);
@@ -817,61 +698,107 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        .room-action-btn:active {
-            background: rgba(127,90,240,0.35);
-            transform: scale(0.95);
+        .room-action-btn:active { background: rgba(127,90,240,0.35); transform: scale(0.95); }
+        .room-action-btn.copied { background: rgba(44,182,125,0.2); border-color: rgba(44,182,125,0.5); color: var(--accent-cyan); }
+
+        /* ===== PRIVATE PHOTO FEATURE ===== */
+        .photo-input-label {
+            cursor: pointer;
+            font-size: 22px;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .photo-input-label:active { background: rgba(255,255,255,0.1); }
+        #photoFileInput { display: none; }
+
+        .photo-bubble { margin-top: 4px; }
+        .photo-bubble img {
+            max-width: 220px;
+            border-radius: 10px;
+            display: block;
+            cursor: pointer;
+            border: 1px solid rgba(127,90,240,0.3);
+            pointer-events: all;
+        }
+        .photo-lock-badge { font-size: 11px; color: #2cb67d; margin-top: 4px; }
+
+        /* Photo viewer overlay */
+        .photo-viewer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.96);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .photo-viewer-overlay.open { display: flex; }
+
+        .photo-viewer-img {
+            max-width: 90vw;
+            max-height: 70vh;
+            border-radius: 12px;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-select: none;
+            display: block;
         }
 
-        .room-action-btn.copied {
-            background: rgba(44,182,125,0.2);
-            border-color: rgba(44,182,125,0.5);
-            color: var(--accent-cyan);
+        .photo-viewer-close {
+            background: rgba(255,255,255,0.12);
+            border: none;
+            color: white;
+            padding: 10px 28px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .photo-viewer-close:hover { background: rgba(255,255,255,0.22); }
+
+        .photo-viewer-info { color: #2cb67d; font-size: 12px; text-align: center; max-width: 280px; line-height: 1.5; }
+
+        /* Camera flicker overlay — disrupts another phone's camera */
+        .cam-flicker {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            pointer-events: none;
+            display: none;
+        }
+        .cam-flicker.active { display: block; animation: flickerCam 0.08s steps(1) infinite; }
+
+        @keyframes flickerCam {
+            0%   { background: transparent; }
+            30%  { background: rgba(255,255,255,0.88); }
+            60%  { background: transparent; }
+            85%  { background: rgba(0,0,0,0.82); }
+            100% { background: transparent; }
         }
 
         /* MOBILE */
         @media (max-width: 768px) {
             .sidebar { display: none !important; }
             .mobile-room-bar { display: flex !important; }
-
             .chat-header { padding: 12px 16px; }
-
-            .messages-area {
-                padding: 15px;
-                padding-bottom: 20px;
-            }
-
+            .messages-area { padding: 15px; padding-bottom: 20px; }
             .message-content { max-width: 80%; }
-
-            .input-area {
-                padding: 12px 15px;
-                padding-bottom: max(20px, env(safe-area-inset-bottom));
-            }
-
+            .input-area { padding: 12px 15px; padding-bottom: max(20px, env(safe-area-inset-bottom)); }
             .intro-title { font-size: 36px; }
-
-            .features {
-                grid-template-columns: 1fr;
-                margin: 40px 0 40px;
-            }
-
+            .features { grid-template-columns: 1fr; margin: 40px 0 40px; }
             .modal { padding: 30px 25px; }
-
             .voice-player { min-width: 180px; max-width: 230px; }
+            .photo-bubble img { max-width: 180px; }
         }
 
         @media (max-width: 480px) {
             .chat-title { font-size: 18px; }
-
-            .avatar {
-                width: 36px;
-                height: 36px;
-                font-size: 12px;
-            }
-
-            .message-text {
-                font-size: 14px;
-                padding: 10px 14px;
-            }
+            .avatar { width: 36px; height: 36px; font-size: 12px; }
+            .message-text { font-size: 14px; padding: 10px 14px; }
         }
     </style>
 </head>
@@ -901,6 +828,11 @@
                 <p class="feature-desc">Hold to record, release to send. Real-time voice communication made simple.</p>
             </div>
             <div class="feature-card">
+                <div class="feature-icon">🖼️</div>
+                <div class="feature-title">Private Photos</div>
+                <p class="feature-desc">Send photos that never save to device or server. Screenshot & camera protected viewing.</p>
+            </div>
+            <div class="feature-card">
                 <div class="feature-icon">⚡</div>
                 <div class="feature-title">Instant Delivery</div>
                 <p class="feature-desc">Built on Socket.io for lightning-fast real-time messaging across the globe.</p>
@@ -910,8 +842,8 @@
         <div class="credits">
             <div class="credits-title">BUILT BY SACHIN × CLAUDE × GEMINI</div>
             <p class="credit-item">Idea & Vision — <strong>Sachin Kumar</strong></p>
-            <p class="credit-item">Development — <strong>Claude </strong></p>
-            <p class="credit-item">Guidance — <strong>Gemini </strong></p>
+            <p class="credit-item">Development — <strong>Claude</strong></p>
+            <p class="credit-item">Guidance — <strong>Gemini</strong></p>
         </div>
     </div>
 
@@ -933,9 +865,7 @@
                 <div id="usersList"></div>
             </div>
 
-            <button class="new-room-btn" onclick="location.reload()">
-                ➕ New Connection
-            </button>
+            <button class="new-room-btn" onclick="location.reload()">➕ New Connection</button>
         </div>
 
         <div class="main-chat">
@@ -962,11 +892,13 @@
             </div>
 
             <div class="input-area">
-                <div class="recording-banner" id="recordingBanner">
-                    ● Recording voice message...
-                </div>
+                <div class="recording-banner" id="recordingBanner">● Recording voice message...</div>
                 <div class="input-wrapper">
                     <input type="text" id="messageInput" placeholder="Type a message...">
+                    <!-- PHOTO BUTTON -->
+                    <label class="photo-input-label" title="Send private photo">🖼️
+                        <input type="file" id="photoFileInput" accept="image/*" onchange="sendPhoto(this)"/>
+                    </label>
                     <button class="input-btn" id="micBtn" title="Hold to record">🎤</button>
                     <button class="input-btn send-btn" onclick="sendMessage()">➤</button>
                 </div>
@@ -992,27 +924,40 @@
         </div>
     </div>
 
+    <!-- ===== PRIVATE PHOTO VIEWER ===== -->
+    <div id="photoViewerOverlay" class="photo-viewer-overlay">
+        <div style="color:white;font-size:14px;font-weight:600;">🔒 Private Photo — Secure View</div>
+        <img id="photoViewerImg" class="photo-viewer-img" src=""
+             draggable="false" oncontextmenu="return false"/>
+        <div class="photo-viewer-info">
+            Screenshot & save disabled · Camera flicker active · Photo deleted after closing
+        </div>
+        <button class="photo-viewer-close" onclick="closePhotoViewer()">Close & Delete Photo</button>
+    </div>
+
+    <!-- Camera flicker layer — disrupts phone camera capture -->
+    <div class="cam-flicker" id="camFlicker"></div>
+
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
         let currentUser = '';
         let currentRoom = '';
 
-        const messagesDiv  = document.getElementById('messages');
-        const messageInput = document.getElementById('messageInput');
-        const usersList    = document.getElementById('usersList');
-        const userCount    = document.getElementById('userCount');
-        const micBtn       = document.getElementById('micBtn');
+        const messagesDiv     = document.getElementById('messages');
+        const messageInput    = document.getElementById('messageInput');
+        const usersList       = document.getElementById('usersList');
+        const userCount       = document.getElementById('userCount');
+        const micBtn          = document.getElementById('micBtn');
         const recordingBanner = document.getElementById('recordingBanner');
-        const errorAlert   = document.getElementById('errorAlert');
-        const successAlert = document.getElementById('successAlert');
+        const errorAlert      = document.getElementById('errorAlert');
+        const successAlert    = document.getElementById('successAlert');
 
         // ===== NAVIGATION =====
         function goToChat() {
             document.getElementById('introPage').classList.add('hidden');
             document.getElementById('chatSection').classList.remove('hidden');
             document.getElementById('loginModal').classList.remove('hidden');
-            // Lock body scroll while in chat
             document.body.classList.add('chat-active');
         }
 
@@ -1172,7 +1117,6 @@
             if (isRecording) return;
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                // Prefer widely-supported format
                 const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
                     ? 'audio/webm;codecs=opus'
                     : MediaRecorder.isTypeSupported('audio/webm')
@@ -1229,10 +1173,8 @@
             msg.className = `message ${data.isOwn ? 'own' : ''}`;
             const initials = data.user.substring(0, 2).toUpperCase();
 
-            // Unique ID for each player
             const pid = 'vp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
 
-            // Generate random-looking bar heights for visual waveform
             const barCount = 20;
             const bars = Array.from({ length: barCount }, (_, i) => {
                 const h = 20 + Math.sin(i * 1.7) * 12 + Math.random() * 18;
@@ -1258,7 +1200,6 @@
             messagesDiv.appendChild(msg);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
-            // Create hidden Audio element
             const audio = new Audio(data.audio);
             audio.preload = 'metadata';
             window[pid + '_audio'] = audio;
@@ -1274,7 +1215,6 @@
             audio.addEventListener('ended', () => {
                 const btn = document.getElementById(pid + '_btn');
                 if (btn) btn.textContent = '▶';
-                // Stop bar animation
                 for (let i = 0; i < barCount; i++) {
                     const b = document.getElementById(`${pid}_bar_${i}`);
                     if (b) b.classList.remove('playing');
@@ -1292,13 +1232,9 @@
             if (audio.paused) {
                 audio.play().catch(e => console.warn('Play error:', e));
                 btn.textContent = '⏸';
-                // Animate bars
                 for (let i = 0; i < 20; i++) {
                     const b = document.getElementById(`${pid}_bar_${i}`);
-                    if (b) {
-                        b.classList.add('playing');
-                        b.style.animationDelay = (i * 0.05) + 's';
-                    }
+                    if (b) { b.classList.add('playing'); b.style.animationDelay = (i * 0.05) + 's'; }
                 }
             } else {
                 audio.pause();
@@ -1329,6 +1265,95 @@
             if (data.user !== currentUser) appendVoice({ ...data, isOwn: false });
         });
 
+        // ===== PRIVATE PHOTO SENDER =====
+        function sendPhoto(input) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            if (file.size > 4 * 1024 * 1024) {
+                showError('Photo too large! Max 4MB.'); return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const dataUrl = e.target.result;
+                socket.emit('send-photo', {
+                    roomCode: currentRoom, user: currentUser, photo: dataUrl
+                });
+                appendPhoto({ user: currentUser, photo: dataUrl, isOwn: true });
+            };
+            reader.readAsDataURL(file);
+            input.value = '';
+        }
+
+        socket.on('receive-photo', (data) => {
+            if (data.user !== currentUser) appendPhoto({ ...data, isOwn: false });
+        });
+
+        function appendPhoto(data) {
+            const emptyState = document.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+
+            const photoData = data.photo;
+            const msg = document.createElement('div');
+            msg.className = `message ${data.isOwn ? 'own' : ''}`;
+            const initials = data.user.substring(0, 2).toUpperCase();
+
+            msg.innerHTML = `
+                <div class="avatar">${initials}</div>
+                <div class="message-content">
+                    <div class="message-author">${data.isOwn ? 'You' : escapeHtml(data.user)}</div>
+                    <div class="photo-bubble">
+                        <img src="${photoData}"
+                             draggable="false"
+                             oncontextmenu="return false"/>
+                        <div class="photo-lock-badge">🔒 Private · tap to view securely</div>
+                    </div>
+                </div>`;
+
+            // Attach click via JS (not inline) to avoid XSS with photo data
+            msg.querySelector('.photo-bubble img').addEventListener('click', () => {
+                openPhotoViewer(photoData);
+            });
+
+            messagesDiv.appendChild(msg);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function openPhotoViewer(src) {
+            document.getElementById('photoViewerImg').src = src;
+            document.getElementById('photoViewerOverlay').classList.add('open');
+            document.getElementById('camFlicker').classList.add('active');
+
+            // Request camera access at moment of viewing — tells user why
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(stream => { window._photoStream = stream; })
+                    .catch(() => {});
+            }
+        }
+
+        function closePhotoViewer() {
+            document.getElementById('photoViewerOverlay').classList.remove('open');
+            document.getElementById('camFlicker').classList.remove('active');
+            // Wipe image from memory
+            setTimeout(() => {
+                document.getElementById('photoViewerImg').src = '';
+            }, 100);
+            // Stop camera stream
+            if (window._photoStream) {
+                window._photoStream.getTracks().forEach(t => t.stop());
+                window._photoStream = null;
+            }
+        }
+
+        // Screenshot / app-switch detection — close viewer immediately
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden &&
+                document.getElementById('photoViewerOverlay').classList.contains('open')) {
+                closePhotoViewer();
+                showError('⚠️ Photo closed — suspicious activity detected');
+            }
+        });
+
         // ===== SYSTEM MESSAGES =====
         socket.on('system-message', (text) => {
             const sys = document.createElement('div');
@@ -1344,7 +1369,7 @@
             usersList.innerHTML = users.map(u => `
                 <div class="user-pill ${u === currentUser ? 'current' : ''}">
                     <div class="online-dot"></div>
-                    <span>${u}${u === currentUser ? ' (You)' : ''}</span>
+                    <span>${escapeHtml(u)}${u === currentUser ? ' (You)' : ''}</span>
                 </div>
             `).join('');
         });
@@ -1357,12 +1382,8 @@
                 const btn = document.getElementById('copyRoomBtn');
                 btn.textContent = '✅ Copied!';
                 btn.classList.add('copied');
-                setTimeout(() => {
-                    btn.textContent = '📋 Copy';
-                    btn.classList.remove('copied');
-                }, 2000);
+                setTimeout(() => { btn.textContent = '📋 Copy'; btn.classList.remove('copied'); }, 2000);
             }).catch(() => {
-                // Fallback for older mobile browsers
                 const el = document.createElement('textarea');
                 el.value = code;
                 el.style.position = 'fixed';
@@ -1383,10 +1404,8 @@
             if (!code || code === '——') return;
             const shareText = `Join my Anonymous Chat room! Code: ${code}\n${window.location.href}`;
             if (navigator.share) {
-                navigator.share({ title: 'Anonymous Chat', text: shareText })
-                    .catch(e => console.log('Share cancelled'));
+                navigator.share({ title: 'Anonymous Chat', text: shareText }).catch(() => {});
             } else {
-                // Fallback: copy full share text
                 navigator.clipboard.writeText(shareText).catch(() => {});
                 showSuccess('Link copied to clipboard!');
             }
