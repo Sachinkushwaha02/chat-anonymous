@@ -3,41 +3,64 @@ const http       = require('http');
 const { Server } = require('socket.io');
 const mongoose   = require('mongoose');
 const path       = require('path');
-const crypto     = require('crypto');
+const crypto     = require('crypto'); // ✅ Built-in Node.js — no install needed
 
 const app    = express();
 const server = http.createServer(app);
 const io     = new Server(server, {
-    maxHttpBufferSize: 5e6  // 5MB limit for voice/photo messages
+    maxHttpBufferSize: 5e6  // 5MB limit for voice messages
 });
 
 // ============================================================
 //  🔐 AES-256-GCM ENCRYPTION HELPERS
+//  - Algorithm : AES-256-GCM  (authenticated encryption)
+//  - Key size  : 256 bits (32 bytes)
+//  - IV size   : 96 bits  (12 bytes) — recommended for GCM
+//  - Key derivation: PBKDF2 — roomCode + APP_SECRET → 256-bit key
+//    So even if someone knows the room code, they still need
+//    the secret to derive the real key.
 // ============================================================
 
+// ⚠️  IMPORTANT: Set this in your environment variables on Render/server
+//     e.g.  APP_SECRET=mera_super_secret_key_change_this_in_production
 const APP_SECRET = process.env.APP_SECRET || 'default_dev_secret_change_in_production';
 
+/**
+ * Derive a 256-bit AES key from the room code + app secret.
+ * PBKDF2 with 100,000 iterations makes brute-force very expensive.
+ * Same room code always → same key (deterministic).
+ */
 function deriveKey(roomCode) {
     return crypto.pbkdf2Sync(
-        roomCode,
-        APP_SECRET,
-        100_000,
-        32,
-        'sha256'
+        roomCode,                    // "password"
+        APP_SECRET,                  // salt  (app-level secret)
+        100_000,                     // iterations
+        32,                          // key length in bytes → 256 bits
+        'sha256'                     // hash algorithm
     );
 }
 
+/**
+ * Encrypt a plain-text string.
+ * Returns a single string:  iv_hex:authTag_hex:ciphertext_hex
+ * All three parts are needed to decrypt.
+ */
 function encrypt(plainText, roomCode) {
     const key = deriveKey(roomCode);
-    const iv  = crypto.randomBytes(12);
+    const iv  = crypto.randomBytes(12);                          // fresh random IV every time
     const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
 
-    const encrypted = Buffer.concat([cipher.update(plainText, 'utf8'), cipher.final()]);
-    const authTag   = cipher.getAuthTag();
+    const encrypted  = Buffer.concat([cipher.update(plainText, 'utf8'), cipher.final()]);
+    const authTag    = cipher.getAuthTag();                      // GCM authentication tag (16 bytes)
 
+    // Store as one combined string so MongoDB holds a single field
     return `${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted.toString('hex')}`;
 }
 
+/**
+ * Decrypt a string produced by encrypt().
+ * Returns the original plain text, or null if tampered / wrong key.
+ */
 function decrypt(encryptedString, roomCode) {
     try {
         const [ivHex, authTagHex, ciphertextHex] = encryptedString.split(':');
@@ -47,10 +70,11 @@ function decrypt(encryptedString, roomCode) {
         const ciphertext = Buffer.from(ciphertextHex, 'hex');
 
         const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
-        decipher.setAuthTag(authTag);
+        decipher.setAuthTag(authTag);                            // ← GCM verifies integrity
 
         return decipher.update(ciphertext, null, 'utf8') + decipher.final('utf8');
     } catch (err) {
+        // Wrong key, corrupted data, or tampered message
         console.error('❌ Decryption failed:', err.message);
         return null;
     }
@@ -77,7 +101,7 @@ mongoose.connect(mongoURI, { serverSelectionTimeoutMS: 5000 })
 const messageSchema = new mongoose.Schema({
     roomCode  : String,
     user      : String,
-    text      : String,
+    text      : String,          // ← stored ENCRYPTED, never plain text
     createdAt : { type: Date, default: Date.now, expires: 900 }
 });
 
@@ -182,6 +206,7 @@ io.on('connection', (socket) => {
                 { users: activeRooms[roomCode], lastActivity: new Date() }
             );
 
+            // ✅ Load history — DECRYPT each message before sending to client
             const chatHistory = await Message.find({ roomCode }).sort({ createdAt: 1 });
             const decryptedHistory = chatHistory.map(msg => ({
                 user : msg.user,
@@ -201,32 +226,37 @@ io.on('connection', (socket) => {
     });
 
     // ----------------------------------------------------------
-    //  SEND TEXT MESSAGE — encrypt before saving
+    //  SEND TEXT MESSAGE  🔐 Encrypt before saving
     // ----------------------------------------------------------
     socket.on('send-message', async (data) => {
         const { roomCode, user, text } = data;
 
+        // 1. Forward plain text to other users in real-time (in-memory, not stored)
         socket.to(roomCode).emit('receive-message', {
             user,
             text,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         });
 
+        // 2. ENCRYPT then save to MongoDB
         try {
-            const encryptedText = encrypt(text, roomCode);
+            const encryptedText = encrypt(text, roomCode);   // ← AES-256-GCM
             const newMessage = new Message({ roomCode, user, text: encryptedText });
             await newMessage.save();
 
             await Room.findOneAndUpdate({ roomCode }, { lastActivity: new Date() });
 
             console.log(`💬 [ENCRYPTED] ${roomCode} — ${user}: ${text.substring(0, 30)}...`);
+            console.log(`   🔒 Stored: ${encryptedText.substring(0, 60)}...`);
         } catch (err) {
             console.error('❌ Error saving message:', err);
         }
     });
 
     // ----------------------------------------------------------
-    //  SEND VOICE MESSAGE
+    //  SEND VOICE MESSAGE  (audio is base64 — encryption optional)
+    //  Kept same as before; voice is large binary data.
+    //  If you want to encrypt voice too, same encrypt() fn works.
     // ----------------------------------------------------------
     socket.on('send-voice', async (data) => {
         const { roomCode, user, audio } = data;
@@ -237,35 +267,6 @@ io.on('connection', (socket) => {
         });
 
         console.log(`🎤 ${roomCode} — ${user}: Voice (${(audio.length / 1024).toFixed(2)} KB)`);
-
-        try {
-            await Room.findOneAndUpdate({ roomCode }, { lastActivity: new Date() });
-        } catch (err) {
-            console.error('❌ Error updating room:', err);
-        }
-    });
-
-    // ----------------------------------------------------------
-    //  SEND PRIVATE PHOTO — never saved to database
-    //  Photo travels through memory only and is deleted after viewing
-    // ----------------------------------------------------------
-    socket.on('send-photo', async (data) => {
-        const { roomCode, user, photo } = data;
-
-        // Validate it's actually an image (basic check)
-        if (!photo || !photo.startsWith('data:image/')) {
-            socket.emit('room-error', { message: 'Invalid photo format.' });
-            return;
-        }
-
-        // Forward to other users in room only — never stored in DB
-        socket.to(roomCode).emit('receive-photo', {
-            user,
-            photo,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        });
-
-        console.log(`🖼️  [PRIVATE PHOTO] ${roomCode} — ${user}: sent (${(photo.length / 1024).toFixed(2)} KB) — NOT stored in DB`);
 
         try {
             await Room.findOneAndUpdate({ roomCode }, { lastActivity: new Date() });
@@ -354,10 +355,8 @@ server.listen(PORT, () => {
     console.log('🔐 AES-256-GCM Encryption: ACTIVE');
     console.log('   • Messages encrypted before MongoDB storage');
     console.log('   • Key derived from roomCode + APP_SECRET');
-    console.log('🖼️  Private Photos: ACTIVE');
-    console.log('   • Photos never saved to database');
-    console.log('   • Memory-only transfer via Socket.io');
-    console.log('   • Deleted after viewing on client side');
+    console.log('   • Real-time delivery: plain text (in-memory only)');
+    console.log('   • History load: auto-decrypted on delivery');
     if (!process.env.APP_SECRET) {
         console.log('');
         console.log('⚠️  WARNING: APP_SECRET not set in environment!');
